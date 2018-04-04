@@ -1,0 +1,259 @@
+---
+title: "Food Security Analyisis Mexico and USA - Complete Scales"
+output: html_document
+---
+
+
+
+```{r setup}
+
+knitr::opts_chunk$set(echo = TRUE)
+
+rm(list=ls())
+
+library(knitr)
+library(ltm)
+library(foreign)
+library(ggplot2)
+library(mirt)
+#library(doBy)
+library(gmodels)
+library(Rcpp)
+
+```
+
+##Step 1 - Mexico
+
+```{r}
+
+
+
+
+setwd("C:/Users/martha/Documents/Food security/Data")
+getwd()
+
+####Read the data
+
+dat<-read.dta("FS_MEX.dta")
+dat<-dat[which(dat$id_child==1),]
+length(dat$i1)
+
+#nochilditems=cbind(dat$i2, dat$i3, dat$i4, dat$i8, dat$i9, dat$i10, dat$i11, dat$i12)
+items=cbind(dat$i1, dat$i2, dat$i3, dat$i4, dat$i5, dat$i6, dat$i7, dat$i8, dat$i9, dat$i10, dat$i11, dat$i12)
+
+####Descriptives
+
+#Frequencies
+freq<-apply(items,2,table)
+freq<-addmargins(freq)
+freq
+
+#Means of affirmative answers
+means<-apply(items,2,mean)
+means
+
+#Summary table 
+table_summary<-rbind(round(freq[1:3,1:12],0), round(means*100,2))
+nam1<-c("Item1", "Item2", "Item3", "Item4", "Item5", "Item6", "Item7", "Item8", "Item9", "Item10", "Item11", "Item12")
+nam2<-c("No", "Yes", "Total", "Percentage")
+colnames(items)<-nam1
+colnames(table_summary)<-nam1
+rownames(table_summary)<-nam2
+
+table_summary
+
+#Plots of affirmative answers for each item
+qplot(x=1:length(means), y=means, main="Proportion of Affirmative Answers 12 items Mexico", xlab="Items for HH With Children", ylab="") + geom_line()
+
+#Using descript from ltm to get the biserial correlations:
+d<-descript(items)
+correlations <- d$bisCorr
+
+#Biserial correlations plots
+qplot(x=1:length(correlations), y=correlations, main="Biserial Correlations 12 items Mexico", xlab="Items for HH with children", ylab="") + geom_line()
+
+####Rawscore vs status
+
+#Rawscore vs status of food security
+CrossTable(dat$rawscore,dat$ins_ali, expected = F, prop.r=F, prop.c=F, prop.t=F, prop.chisq=F, chisq = F, fisher=F, mcnemar=F, resid=F, sresid=F, asresid=F)
+
+####Models
+
+#First we define the relative sampling weights by multiplying the sample weight by the number of obervations on sample and dividing by the sum of weights (just for HH with children) 
+sum(dat$weight)
+length(dat$weight)
+dat$weight.model = dat$weight*(42640/20124098)
+
+#Unconstrained Rasch model
+fit.rasch <- mirt(items, model=1, itemtype='Rasch', survey.weights = dat$weight.model)
+coef(fit.rasch, simplify=T)
+plot(fit.rasch, type = 'trace', which.items = 1:12, facet_items=FALSE)
+
+#2PL model
+fit.2pl <- mirt(items, model=1, itemtype='2PL', survey.weights = dat$weight.model)
+coef(fit.2pl, simplify=T)
+plot(fit.2pl, type = 'trace', which.items = 1:12, facet_items=FALSE)
+
+#Chi-square test; they significantly differ
+anova(fit.rasch, fit.2pl)
+
+#Function to extract the parameters
+ext.coef<-function(model, k) {
+  a <- coef(model, as.data.frame=T)
+  a <- a[seq(k,length(a),4)]
+  a <- a[c(1:12)]
+  return(a)
+}
+
+difpar.r=ext.coef(fit.rasch,2)
+difpar.2=ext.coef(fit.2pl,2)
+discpar.2=ext.coef(fit.2pl,1)
+
+df1<-data.frame(discpar.2, nam1)
+df2<-df1[order(df1$discpar.2),]
+df2
+
+#Plot difficulty parameters of Rasch vs 2PL
+qplot(x=difpar.r, y=difpar.2, main="Difficulty parameters Rasch vs 2PL Mexico", xlab="Rasch Model", ylab="2PL Model") + geom_line()
+
+#Plot discrimination parameter of 2PL model 
+qplot(y=df2$discpar.2, x=c(seq(1,12,1)), xlab="", ylab="Discrimination Parameters", main="Discrimination Parameters 2PL Mexico") + geom_line()
+
+#Estimate the factor scores
+f <- fscores(fit.2pl, method='ML')
+
+#Cut points transformed to scores
+summary(f[dat$ins_ali==1])
+summary(f[dat$ins_ali==2])
+summary(f[dat$ins_ali==3])
+
+#Density plots
+par(mfrow=c(1,3))
+plot(density(f[dat$ins_ali==1]))
+plot(density(f[dat$ins_ali==2]))
+plot(density(f[dat$ins_ali==3]))
+
+par(mfrow=c(1,1))
+plot(density(f), main="Score Density and Cut-Off Points", sub="Mexico")
+abline(v=1.0128)
+abline(v=1.5075)
+
+
+```
+
+###Step 2 - United States
+
+```{r}
+
+
+setwd("C:/Users/martha/Documents/Food security/Data")
+getwd()
+
+####Read the data
+
+dat<-read.dta("FS_US.dta")
+dat<-dat[which(dat$id_child==1),]
+length(dat$hrhhid)
+
+#nochilditems=cbind(dat$i2, dat$i3, dat$i4, dat$i8, dat$i9, dat$i10, dat$i11, dat$i12)
+items=cbind(dat$i2, dat$i3, dat$i4, dat$i8, dat$i9, dat$i10, dat$i11, dat$i12, dat$i5, dat$i6, dat$i7, dat$i13, dat$i14, dat$i15, dat$i16)
+
+####Descriptives
+
+#Frequencies
+freq<-apply(items,2,table)
+freq<-addmargins(freq)
+freq
+
+#Means of affirmative answers
+means<-apply(items,2,mean)
+
+#Summary table 
+table_summary<-rbind(round(freq[1:3,1:15],0), round(means*100,2))
+nam1<-c("Item2", "Item3", "Item4", "Item8", "Item9", "Item10", "Item11", "Item12", "Item5", "Item6", "Item7", "Item13", "Item14", "Item15", "Item16")
+nam2<-c("No", "Yes", "Total", "Percentage")
+colnames(items)<-nam1
+colnames(table_summary)<-nam1
+rownames(table_summary)<-nam2
+
+table_summary
+
+#Plots of affirmative answers for each item
+qplot(x=1:length(means), y=means, main="Proportion of Affirmative Answers 15 items", xlab="Items for hh With Children", ylab="") + geom_line()
+
+#Using descript from ltm to get the biserial correlations:
+d<-descript(items)
+correlations <- d$bisCorr
+
+#Biserial correlations plots
+qplot(x=1:length(correlations), y=correlations, main="Biserial Correlations 15 items", xlab="Items for hh with children", ylab="") + geom_line()
+
+####Rawscore vs status
+
+#Rawscore vs status of food security
+CrossTable(dat$rawscore,dat$status, expected = F, prop.r=F, prop.c=F, prop.t=F, prop.chisq=F, chisq = F, fisher=F, mcnemar=F, resid=F, sresid=F, asresid=F)
+
+####Models
+
+#First we define the relative sampling weights by multiplying the sample weight by the number of obervations on sample and dividing by the sum of weights (just for HH with children) 
+sum(dat$weighth)
+length(dat$weighth)
+dat$weight.model = dat$weighth*(48200/154093158)
+
+#Unconstrained Rasch model
+fit.rasch <- mirt(items, model=1, itemtype='Rasch', survey.weights = dat$weight.model)
+coef(fit.rasch, simplify=T)
+plot(fit.rasch, type = 'trace', which.items = 1:15, facet_items=FALSE)
+
+#2PL model
+fit.2pl <- mirt(items, model=1, itemtype='2PL', survey.weights = dat$weight.model)
+coef(fit.2pl, simplify=T)
+plot(fit.2pl, type = 'trace', which.items = 1:15, facet_items=FALSE)
+
+#Chi-square test; they significantly differ
+anova(fit.rasch, fit.2pl)
+
+#Function to extract the parameters
+ext.coef<-function(model, k) {
+  a <- coef(model, as.data.frame=T)
+  a <- a[seq(k,length(a),4)]
+  a <- a[c(1:15)]
+  return(a)
+}  
+
+difpar.r=ext.coef(fit.rasch,2)
+difpar.2=ext.coef(fit.2pl,2)
+discpar.2=ext.coef(fit.2pl,1)
+
+df1<-data.frame(discpar.2, nam1)
+df2<-df1[order(df1$discpar.2),]
+df2
+
+#Plot difficulty parameters of Rasch vs 2PL
+qplot(x=difpar.r, y=difpar.2, main="Difficulty parameters Rasch vs 2PL US", xlab="Rasch Model", ylab="2PL Model") + geom_line()
+
+#Plot discrimination parameter of 2PL model 
+qplot(y=df2$discpar.2, x=c(seq(1,15,1)), xlab="", ylab="Discrimination parameters", main="Discrimination Parameters 2PL US") + geom_line()
+
+#Estimate the factor scores
+f <- fscores(fit.2pl, method='ML')
+
+#Cut points transformed to scores
+summary(f[dat$status=="Marginal Food Security"])
+summary(f[dat$status=="Low Food Security"])
+summary(f[dat$status=="Very Low Food Security"])
+
+#Density plots
+par(mfrow=c(1,3))
+plot(density(f[dat$status=="Marginal Food Security"]))
+plot(density(f[dat$status=="Low Food Security"]))
+plot(density(f[dat$status=="Very Low Food Security"]))
+
+par(mfrow=c(1,1))
+plot(density(f), main="Score Density and Cut-Off Points", sub="US")
+abline(v=1.0768)
+abline(v=1.7994)
+
+
+```
+
