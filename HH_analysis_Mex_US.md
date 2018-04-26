@@ -1,130 +1,12 @@
 Food Security Analyisis Mexico and USA - Complete Scales
 ================
 
-``` r
-knitr::opts_chunk$set(echo = TRUE)
-
-rm(list=ls())
-
-library(knitr)
-library(ltm)
-```
-
-    ## Loading required package: MASS
-
-    ## Loading required package: msm
-
-    ## Loading required package: polycor
-
-``` r
-library(foreign)
-library(ggplot2)
-library(mirt)
-```
-
-    ## Loading required package: stats4
-
-    ## Loading required package: lattice
-
-    ## 
-    ## Attaching package: 'mirt'
-
-    ## The following object is masked from 'package:ltm':
-    ## 
-    ##     Science
-
-``` r
-#library(doBy)
-library(gmodels)
-```
-
-    ## Warning: package 'gmodels' was built under R version 3.4.4
-
-``` r
-library(Rcpp)
-```
-
-    ## Warning: package 'Rcpp' was built under R version 3.4.4
-
 Step 1 - Mexico
 ---------------
 
-``` r
-setwd("C:/Users/martha/Documents/Food security/Data")
-getwd()
-```
-
-    ## [1] "C:/Users/martha/Documents/Food security/Data"
-
-``` r
-####Read the data
-
-dat<-read.dta("FS_MEX.dta")
-```
-
-    ## Warning in read.dta("FS_MEX.dta"): value labels ('si_no') for 'i1' are
-    ## missing
-
-    ## Warning in read.dta("FS_MEX.dta"): value labels ('si_no') for 'i2' are
-    ## missing
-
-    ## Warning in read.dta("FS_MEX.dta"): value labels ('si_no') for 'i3' are
-    ## missing
-
-    ## Warning in read.dta("FS_MEX.dta"): value labels ('si_no') for 'i4' are
-    ## missing
-
-    ## Warning in read.dta("FS_MEX.dta"): value labels ('si_no') for 'i5' are
-    ## missing
-
-    ## Warning in read.dta("FS_MEX.dta"): value labels ('si_no') for 'i6' are
-    ## missing
-
-    ## Warning in read.dta("FS_MEX.dta"): value labels ('si_no') for 'i7' are
-    ## missing
-
-    ## Warning in read.dta("FS_MEX.dta"): value labels ('si_no') for 'i8' are
-    ## missing
-
-    ## Warning in read.dta("FS_MEX.dta"): value labels ('si_no') for 'i9' are
-    ## missing
-
-    ## Warning in read.dta("FS_MEX.dta"): value labels ('si_no') for 'i10' are
-    ## missing
-
-    ## Warning in read.dta("FS_MEX.dta"): value labels ('si_no') for 'i11' are
-    ## missing
-
-    ## Warning in read.dta("FS_MEX.dta"): value labels ('si_no') for 'i12' are
-    ## missing
-
-    ## Warning in read.dta("FS_MEX.dta"): value labels ('id_men') for 'id_child'
-    ## are missing
-
-    ## Warning in read.dta("FS_MEX.dta"): value labels ('ins_ali') for 'ins_ali'
-    ## are missing
-
-    ## Warning in read.dta("FS_MEX.dta"): value labels ('caren') for 'ic_ali' are
-    ## missing
-
-``` r
-dat<-dat[which(dat$id_child==1),]
-length(dat$i1)
-```
+12 items 6 for all households and 6 only for househols with children
 
     ## [1] 42640
-
-``` r
-#nochilditems=cbind(dat$i2, dat$i3, dat$i4, dat$i8, dat$i9, dat$i10, dat$i11, dat$i12)
-items=cbind(dat$i1, dat$i2, dat$i3, dat$i4, dat$i5, dat$i6, dat$i7, dat$i8, dat$i9, dat$i10, dat$i11, dat$i12)
-
-####Descriptives
-
-#Frequencies
-freq<-apply(items,2,table)
-freq<-addmargins(freq)
-freq
-```
 
     ##                                                                      
     ## 0   27275 36234 31387 37195 35938 37886 32723 35987 36068 39800 39835
@@ -135,26 +17,8 @@ freq
     ## 1    1994  80706
     ## Sum 42640 511680
 
-``` r
-#Means of affirmative answers
-means<-apply(items,2,mean)
-means
-```
-
     ##  [1] 0.36034240 0.15023452 0.26390713 0.12769700 0.15717636 0.11149156
     ##  [7] 0.23257505 0.15602720 0.15412758 0.06660413 0.06578330 0.04676360
-
-``` r
-#Summary table 
-table_summary<-rbind(round(freq[1:3,1:12],0), round(means*100,2))
-nam1<-c("Item1", "Item2", "Item3", "Item4", "Item5", "Item6", "Item7", "Item8", "Item9", "Item10", "Item11", "Item12")
-nam2<-c("No", "Yes", "Total", "Percentage")
-colnames(items)<-nam1
-colnames(table_summary)<-nam1
-rownames(table_summary)<-nam2
-
-table_summary
-```
 
     ##               Item1    Item2    Item3    Item4    Item5    Item6    Item7
     ## No         27275.00 36234.00 31387.00 37195.00 35938.00 37886.00 32723.00
@@ -167,30 +31,7 @@ table_summary
     ## Total      42640.0 42640.00 42640.00 42640.00 42640.00
     ## Percentage    15.6    15.41     6.66     6.58     4.68
 
-``` r
-#Plots of affirmative answers for each item
-qplot(x=1:length(means), y=means, main="Proportion of Affirmative Answers 12 items Mexico", xlab="Items for HH With Children", ylab="") + geom_line()
-```
-
-![](HH_analysis_Mex_US_files/figure-markdown_github/unnamed-chunk-1-1.png)
-
-``` r
-#Using descript from ltm to get the biserial correlations:
-d<-descript(items)
-correlations <- d$bisCorr
-
-#Biserial correlations plots
-qplot(x=1:length(correlations), y=correlations, main="Biserial Correlations 12 items Mexico", xlab="Items for HH with children", ylab="") + geom_line()
-```
-
-![](HH_analysis_Mex_US_files/figure-markdown_github/unnamed-chunk-1-2.png)
-
-``` r
-####Rawscore vs status
-
-#Rawscore vs status of food security
-CrossTable(dat$rawscore,dat$ins_ali, expected = F, prop.r=F, prop.c=F, prop.t=F, prop.chisq=F, chisq = F, fisher=F, mcnemar=F, resid=F, sresid=F, asresid=F)
-```
+![](HH_analysis_Mex_US_files/figure-markdown_github/unnamed-chunk-1-1.png)![](HH_analysis_Mex_US_files/figure-markdown_github/unnamed-chunk-1-2.png)
 
     ## 
     ##  
@@ -237,27 +78,9 @@ CrossTable(dat$rawscore,dat$ins_ali, expected = F, prop.r=F, prop.c=F, prop.t=F,
     ## 
     ## 
 
-``` r
-####Models
-
-#First we define the relative sampling weights by multiplying the sample weight by the number of obervations on sample and dividing by the sum of weights (just for HH with children) 
-sum(dat$weight)
-```
-
     ## [1] 20124098
 
-``` r
-length(dat$weight)
-```
-
     ## [1] 42640
-
-``` r
-dat$weight.model = dat$weight*(42640/20124098)
-
-#Unconstrained Rasch model
-fit.rasch <- mirt(items, model=1, itemtype='Rasch', survey.weights = dat$weight.model)
-```
 
     ## 
     Iteration: 1, Log-Lik: -152112.032, Max-Change: 0.75043
@@ -291,10 +114,6 @@ fit.rasch <- mirt(items, model=1, itemtype='Rasch', survey.weights = dat$weight.
     Iteration: 29, Log-Lik: -128163.500, Max-Change: 0.00010
     Iteration: 30, Log-Lik: -128163.455, Max-Change: 0.00009
 
-``` r
-coef(fit.rasch, simplify=T)
-```
-
     ## $items
     ##        a1      d g u
     ## Item1   1 -0.978 0 1
@@ -318,16 +137,7 @@ coef(fit.rasch, simplify=T)
     ##     F1
     ## F1 7.4
 
-``` r
-plot(fit.rasch, type = 'trace', which.items = 1:12, facet_items=FALSE)
-```
-
 ![](HH_analysis_Mex_US_files/figure-markdown_github/unnamed-chunk-1-3.png)
-
-``` r
-#2PL model
-fit.2pl <- mirt(items, model=1, itemtype='2PL', survey.weights = dat$weight.model)
-```
 
     ## 
     Iteration: 1, Log-Lik: -157644.583, Max-Change: 2.85156
@@ -428,10 +238,6 @@ fit.2pl <- mirt(items, model=1, itemtype='2PL', survey.weights = dat$weight.mode
     Iteration: 96, Log-Lik: -123983.994, Max-Change: 0.00035
     Iteration: 97, Log-Lik: -123983.994, Max-Change: 0.00006
 
-``` r
-coef(fit.2pl, simplify=T)
-```
-
     ## $items
     ##           a1       d g u
     ## Item1  3.730  -1.634 0 1
@@ -455,16 +261,7 @@ coef(fit.2pl, simplify=T)
     ##    F1
     ## F1  1
 
-``` r
-plot(fit.2pl, type = 'trace', which.items = 1:12, facet_items=FALSE)
-```
-
 ![](HH_analysis_Mex_US_files/figure-markdown_github/unnamed-chunk-1-4.png)
-
-``` r
-#Chi-square test; they significantly differ
-anova(fit.rasch, fit.2pl)
-```
 
     ## 
     ## Model 1: mirt(data = items, model = 1, itemtype = "Rasch", survey.weights = dat$weight.model)
@@ -474,23 +271,33 @@ anova(fit.rasch, fit.2pl)
     ## 1 256352.9 256352.9 256424.2 256465.5 -128163.5      NaN NaN NaN
     ## 2 248016.0 248016.0 248147.6 248223.8 -123984.0 8358.922  11   0
 
-``` r
-#Function to extract the parameters
-ext.coef<-function(model, k) {
-  a <- coef(model, as.data.frame=T)
-  a <- a[seq(k,length(a),4)]
-  a <- a[c(1:12)]
-  return(a)
-}
+    ##      difpar.r   nam1
+    ## 12 -5.5842187 Item12
+    ## 10 -5.0601456 Item10
+    ## 11 -5.0236646 Item11
+    ## 6  -3.9559369  Item6
+    ## 4  -3.7848503  Item4
+    ## 9  -3.3724805  Item9
+    ## 2  -3.3663562  Item2
+    ## 8  -3.3545375  Item8
+    ## 5  -3.2668051  Item5
+    ## 7  -2.3268360  Item7
+    ## 3  -1.9097985  Item3
+    ## 1  -0.9780848  Item1
 
-difpar.r=ext.coef(fit.rasch,2)
-difpar.2=ext.coef(fit.2pl,2)
-discpar.2=ext.coef(fit.2pl,1)
-
-df1<-data.frame(discpar.2, nam1)
-df2<-df1[order(df1$discpar.2),]
-df2
-```
+    ##      difpar.2   nam1
+    ## 11 -10.273022 Item11
+    ## 12  -9.658433 Item12
+    ## 10  -9.620999 Item10
+    ## 8   -6.322017  Item8
+    ## 9   -5.704816  Item9
+    ## 6   -4.695596  Item6
+    ## 2   -4.404397  Item2
+    ## 5   -4.266501  Item5
+    ## 4   -3.717029  Item4
+    ## 3   -3.219711  Item3
+    ## 7   -3.175032  Item7
+    ## 1   -1.633837  Item1
 
     ##    discpar.2   nam1
     ## 4   2.661574  Item4
@@ -506,94 +313,24 @@ df2
     ## 10  6.163069 Item10
     ## 11  6.672330 Item11
 
-``` r
-#Plot difficulty parameters of Rasch vs 2PL
-qplot(x=difpar.r, y=difpar.2, main="Difficulty parameters Rasch vs 2PL Mexico", xlab="Rasch Model", ylab="2PL Model") + geom_line()
-```
-
-![](HH_analysis_Mex_US_files/figure-markdown_github/unnamed-chunk-1-5.png)
-
-``` r
-#Plot discrimination parameter of 2PL model 
-qplot(y=df2$discpar.2, x=c(seq(1,12,1)), xlab="", ylab="Discrimination Parameters", main="Discrimination Parameters 2PL Mexico") + geom_line()
-```
-
-![](HH_analysis_Mex_US_files/figure-markdown_github/unnamed-chunk-1-6.png)
-
-``` r
-#Estimate the factor scores
-f <- fscores(fit.2pl, method='ML')
-
-#Cut points transformed to scores
-summary(f[dat$ins_ali==1])
-```
+![](HH_analysis_Mex_US_files/figure-markdown_github/unnamed-chunk-1-5.png)![](HH_analysis_Mex_US_files/figure-markdown_github/unnamed-chunk-1-6.png)
 
     ##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
     ##  0.2553  0.3664  0.6168  0.5684  0.6868  1.0128
 
-``` r
-summary(f[dat$ins_ali==2])
-```
-
     ##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
     ##  0.8745  1.0053  1.1222  1.1195  1.2188  1.5075
-
-``` r
-summary(f[dat$ins_ali==3])
-```
 
     ##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
     ##   1.345   1.495   1.705     Inf   2.026     Inf
 
-``` r
-#Density plots
-par(mfrow=c(1,3))
-plot(density(f[dat$ins_ali==1]))
-plot(density(f[dat$ins_ali==2]))
-plot(density(f[dat$ins_ali==3]))
-```
-
-![](HH_analysis_Mex_US_files/figure-markdown_github/unnamed-chunk-1-7.png)
-
-``` r
-par(mfrow=c(1,1))
-plot(density(f), main="Score Density and Cut-Off Points", sub="Mexico")
-abline(v=1.0128)
-abline(v=1.5075)
-```
-
-![](HH_analysis_Mex_US_files/figure-markdown_github/unnamed-chunk-1-8.png)
+![](HH_analysis_Mex_US_files/figure-markdown_github/unnamed-chunk-1-7.png)![](HH_analysis_Mex_US_files/figure-markdown_github/unnamed-chunk-1-8.png)
 
 ### Step 2 - United States
 
-``` r
-setwd("C:/Users/martha/Documents/Food security/Data")
-getwd()
-```
-
-    ## [1] "C:/Users/martha/Documents/Food security/Data"
-
-``` r
-####Read the data
-
-dat<-read.dta("FS_US.dta")
-dat<-dat[which(dat$id_child==1),]
-length(dat$hrhhid)
-```
+15 items, 8 for all households, 7 just for househols with children
 
     ## [1] 48200
-
-``` r
-#nochilditems=cbind(dat$i2, dat$i3, dat$i4, dat$i8, dat$i9, dat$i10, dat$i11, dat$i12)
-items=cbind(dat$i2, dat$i3, dat$i4, dat$i8, dat$i9, dat$i10, dat$i11, dat$i12, dat$i5, dat$i6, dat$i7, dat$i13, dat$i14, dat$i15, dat$i16)
-
-####Descriptives
-
-#Frequencies
-freq<-apply(items,2,table)
-freq<-addmargins(freq)
-freq
-```
 
     ##                                                                      
     ## 0   38012 40435 41101 44270 43993 46105 47151 47426 41830 44137 46488
@@ -603,21 +340,6 @@ freq
     ## 0   47414 47949 47725 48147 672183
     ## 1     786   251   475    53  50817
     ## Sum 48200 48200 48200 48200 723000
-
-``` r
-#Means of affirmative answers
-means<-apply(items,2,mean)
-
-#Summary table 
-table_summary<-rbind(round(freq[1:3,1:15],0), round(means*100,2))
-nam1<-c("Item2", "Item3", "Item4", "Item8", "Item9", "Item10", "Item11", "Item12", "Item5", "Item6", "Item7", "Item13", "Item14", "Item15", "Item16")
-nam2<-c("No", "Yes", "Total", "Percentage")
-colnames(items)<-nam1
-colnames(table_summary)<-nam1
-rownames(table_summary)<-nam2
-
-table_summary
-```
 
     ##               Item2    Item3    Item4    Item8    Item9   Item10   Item11
     ## No         38012.00 40435.00 41101.00 44270.00 43993.00 46105.00 47151.00
@@ -635,30 +357,7 @@ table_summary
     ## Total      48200.00
     ## Percentage     0.11
 
-``` r
-#Plots of affirmative answers for each item
-qplot(x=1:length(means), y=means, main="Proportion of Affirmative Answers 15 items", xlab="Items for hh With Children", ylab="") + geom_line()
-```
-
-![](HH_analysis_Mex_US_files/figure-markdown_github/unnamed-chunk-2-1.png)
-
-``` r
-#Using descript from ltm to get the biserial correlations:
-d<-descript(items)
-correlations <- d$bisCorr
-
-#Biserial correlations plots
-qplot(x=1:length(correlations), y=correlations, main="Biserial Correlations 15 items", xlab="Items for hh with children", ylab="") + geom_line()
-```
-
-![](HH_analysis_Mex_US_files/figure-markdown_github/unnamed-chunk-2-2.png)
-
-``` r
-####Rawscore vs status
-
-#Rawscore vs status of food security
-CrossTable(dat$rawscore,dat$status, expected = F, prop.r=F, prop.c=F, prop.t=F, prop.chisq=F, chisq = F, fisher=F, mcnemar=F, resid=F, sresid=F, asresid=F)
-```
+![](HH_analysis_Mex_US_files/figure-markdown_github/unnamed-chunk-2-1.png)![](HH_analysis_Mex_US_files/figure-markdown_github/unnamed-chunk-2-2.png)
 
     ## 
     ##  
@@ -717,27 +416,9 @@ CrossTable(dat$rawscore,dat$status, expected = F, prop.r=F, prop.c=F, prop.t=F, 
     ## 
     ## 
 
-``` r
-####Models
-
-#First we define the relative sampling weights by multiplying the sample weight by the number of obervations on sample and dividing by the sum of weights (just for HH with children) 
-sum(dat$weighth)
-```
-
     ## [1] 154093158
 
-``` r
-length(dat$weighth)
-```
-
     ## [1] 48200
-
-``` r
-dat$weight.model = dat$weighth*(48200/154093158)
-
-#Unconstrained Rasch model
-fit.rasch <- mirt(items, model=1, itemtype='Rasch', survey.weights = dat$weight.model)
-```
 
     ## 
     Iteration: 1, Log-Lik: -119358.275, Max-Change: 1.52014
@@ -779,10 +460,6 @@ fit.rasch <- mirt(items, model=1, itemtype='Rasch', survey.weights = dat$weight.
     Iteration: 37, Log-Lik: -97633.717, Max-Change: 0.00023
     Iteration: 38, Log-Lik: -97633.615, Max-Change: 0.00009
 
-``` r
-coef(fit.rasch, simplify=T)
-```
-
     ## $items
     ##        a1      d g u
     ## Item2   1 -2.257 0 1
@@ -809,16 +486,7 @@ coef(fit.rasch, simplify=T)
     ##       F1
     ## F1 6.825
 
-``` r
-plot(fit.rasch, type = 'trace', which.items = 1:15, facet_items=FALSE)
-```
-
 ![](HH_analysis_Mex_US_files/figure-markdown_github/unnamed-chunk-2-3.png)
-
-``` r
-#2PL model
-fit.2pl <- mirt(items, model=1, itemtype='2PL', survey.weights = dat$weight.model)
-```
 
     ## 
     Iteration: 1, Log-Lik: -123711.770, Max-Change: 2.91014
@@ -931,10 +599,6 @@ fit.2pl <- mirt(items, model=1, itemtype='2PL', survey.weights = dat$weight.mode
     Iteration: 108, Log-Lik: -91971.240, Max-Change: 0.00030
     Iteration: 109, Log-Lik: -91971.239, Max-Change: 0.00009
 
-``` r
-coef(fit.2pl, simplify=T)
-```
-
     ## $items
     ##           a1       d g u
     ## Item2  6.056  -5.166 0 1
@@ -961,16 +625,7 @@ coef(fit.2pl, simplify=T)
     ##    F1
     ## F1  1
 
-``` r
-plot(fit.2pl, type = 'trace', which.items = 1:15, facet_items=FALSE)
-```
-
 ![](HH_analysis_Mex_US_files/figure-markdown_github/unnamed-chunk-2-4.png)
-
-``` r
-#Chi-square test; they significantly differ
-anova(fit.rasch, fit.2pl)
-```
 
     ## 
     ## Model 1: mirt(data = items, model = 1, itemtype = "Rasch", survey.weights = dat$weight.model)
@@ -980,23 +635,39 @@ anova(fit.rasch, fit.2pl)
     ## 1 195299.2 195299.2 195388.9 195439.8 -97633.62      NaN NaN NaN
     ## 2 184002.5 184002.5 184170.6 184266.0 -91971.24 11324.75  14   0
 
-``` r
-#Function to extract the parameters
-ext.coef<-function(model, k) {
-  a <- coef(model, as.data.frame=T)
-  a <- a[seq(k,length(a),4)]
-  a <- a[c(1:15)]
-  return(a)
-}  
+    ##     difpar.r   nam1
+    ## 15 -9.548678 Item16
+    ## 13 -7.913043 Item14
+    ## 14 -7.349961 Item15
+    ## 8  -6.779539 Item12
+    ## 12 -6.772899 Item13
+    ## 7  -6.500238 Item11
+    ## 11 -5.774313  Item7
+    ## 6  -5.556953 Item10
+    ## 4  -4.439961  Item8
+    ## 10 -4.421904  Item6
+    ## 5  -4.344076  Item9
+    ## 9  -3.541455  Item5
+    ## 3  -3.243966  Item4
+    ## 2  -2.943163  Item3
+    ## 1  -2.257199  Item2
 
-difpar.r=ext.coef(fit.rasch,2)
-difpar.2=ext.coef(fit.2pl,2)
-discpar.2=ext.coef(fit.2pl,1)
-
-df1<-data.frame(discpar.2, nam1)
-df2<-df1[order(df1$discpar.2),]
-df2
-```
+    ##      difpar.2   nam1
+    ## 15 -18.273823 Item16
+    ## 13 -12.339247 Item14
+    ## 14 -12.200908 Item15
+    ## 8  -10.532829 Item12
+    ## 12 -10.039135 Item13
+    ## 6   -9.773148 Item10
+    ## 4   -8.826858  Item8
+    ## 5   -8.740720  Item9
+    ## 7   -8.591863 Item11
+    ## 11  -7.517804  Item7
+    ## 10  -5.926300  Item6
+    ## 2   -5.735187  Item3
+    ## 1   -5.166443  Item2
+    ## 3   -4.758379  Item4
+    ## 9   -4.634479  Item5
 
     ##    discpar.2   nam1
     ## 9   3.546437  Item5
@@ -1015,60 +686,15 @@ df2
     ## 1   6.055518  Item2
     ## 15  6.323328 Item16
 
-``` r
-#Plot difficulty parameters of Rasch vs 2PL
-qplot(x=difpar.r, y=difpar.2, main="Difficulty parameters Rasch vs 2PL US", xlab="Rasch Model", ylab="2PL Model") + geom_line()
-```
-
-![](HH_analysis_Mex_US_files/figure-markdown_github/unnamed-chunk-2-5.png)
-
-``` r
-#Plot discrimination parameter of 2PL model 
-qplot(y=df2$discpar.2, x=c(seq(1,15,1)), xlab="", ylab="Discrimination parameters", main="Discrimination Parameters 2PL US") + geom_line()
-```
-
-![](HH_analysis_Mex_US_files/figure-markdown_github/unnamed-chunk-2-6.png)
-
-``` r
-#Estimate the factor scores
-f <- fscores(fit.2pl, method='ML')
-
-#Cut points transformed to scores
-summary(f[dat$status=="Marginal Food Security"])
-```
+![](HH_analysis_Mex_US_files/figure-markdown_github/unnamed-chunk-2-5.png)![](HH_analysis_Mex_US_files/figure-markdown_github/unnamed-chunk-2-6.png)
 
     ##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
     ##  0.7003  0.8045  0.8387  0.8767  1.0036  1.0768
 
-``` r
-summary(f[dat$status=="Low Food Security"])
-```
-
     ##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
     ##  0.9996  1.1885  1.3527  1.3581  1.5012  1.7994
-
-``` r
-summary(f[dat$status=="Very Low Food Security"])
-```
 
     ##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
     ##   1.629   1.807   1.948     Inf   2.141     Inf
 
-``` r
-#Density plots
-par(mfrow=c(1,3))
-plot(density(f[dat$status=="Marginal Food Security"]))
-plot(density(f[dat$status=="Low Food Security"]))
-plot(density(f[dat$status=="Very Low Food Security"]))
-```
-
-![](HH_analysis_Mex_US_files/figure-markdown_github/unnamed-chunk-2-7.png)
-
-``` r
-par(mfrow=c(1,1))
-plot(density(f), main="Score Density and Cut-Off Points", sub="US")
-abline(v=1.0768)
-abline(v=1.7994)
-```
-
-![](HH_analysis_Mex_US_files/figure-markdown_github/unnamed-chunk-2-8.png)
+![](HH_analysis_Mex_US_files/figure-markdown_github/unnamed-chunk-2-7.png)![](HH_analysis_Mex_US_files/figure-markdown_github/unnamed-chunk-2-8.png)
